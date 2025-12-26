@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бесконечный скролл на Holst</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            margin: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .scroll-demo {
+            height: 300px;
+            overflow-y: auto;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .content {
+            animation: scroll 30s linear infinite;
+        }
+        
+        .content:hover {
+            animation-play-state: paused;
+        }
+        
+        @keyframes scroll {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+        
+        .item {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-size: 1.1em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            font-size: 0.9em;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Ошибки других агентов</h1>
+        
+        <div class="scroll-demo" id="scrollContainer">
+            <div class="content" id="content">
+                <!-- Контент будет добавлен через JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Создаем контент для скролла
+        const items = [
+            "📌 Первый элемент бесконечного скролла",
+            "🎨 Второй элемент с полезной информацией",
+            "🚀 Третий элемент - демонстрация работы",
+            "💡 Четвертый элемент для наглядности",
+            "🔧 Пятый элемент с дополнительными данными",
+            "📊 Шестой элемент статистики",
+            "🎯 Седьмой элемент целей и задач",
+            "🌟 Восьмой элемент успехов и достижений",
+            "🔄 Девятый элемент замыкает цикл",
+            "🎪 Десятый элемент завершает первый круг"
+        ];
+        
+        // Дублируем элементы для бесшовного перехода
+        const duplicatedItems = [...items, ...items];
+        
+        const content = document.getElementById('content');
+        let speed = 30; // секунд на полный цикл
+        let isPaused = false;
+        let direction = 1; // 1 = вниз, -1 = вверх
+        
+        // Заполняем контент
+        duplicatedItems.forEach((text, index) => {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.textContent = `${index + 1}. ${text}`;
+            content.appendChild(item);
+        });
+        
+        // Обновляем анимацию
+        function updateAnimation() {
+            const animationDuration = speed + 's';
+            const animationName = direction === 1 ? 'scroll' : 'scroll-reverse';
+            
+            // Создаем обратную анимацию
+            if (!document.getElementById('reverse-style')) {
+                const style = document.createElement('style');
+                style.id = 'reverse-style';
+                style.textContent = `
+                    @keyframes scroll-reverse {
+                        0% { transform: translateY(-50%); }
+                        100% { transform: translateY(0); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            content.style.animation = `${animationName} ${animationDuration} linear infinite`;
+            content.style.animationPlayState = isPaused ? 'paused' : 'running';
+        }
+        
+        // Функции управления
+        function changeSpeed(delta) {
+            speed = Math.max(5, Math.min(60, speed + delta * 5));
+            updateAnimation();
+            showNotification(`Скорость: ${speed}с на цикл`);
+        }
+        
+        function togglePause() {
+            isPaused = !isPaused;
+            updateAnimation();
+            showNotification(isPaused ? '⏸️ Пауза' : '▶️ Продолжение');
+        }
+        
+        function changeDirection() {
+            direction *= -1;
+            updateAnimation();
+            showNotification(direction === 1 ? '⬇️ Направление: вниз' : '⬆️ Направление: вверх');
+        }
+        
+        function showNotification(message) {
+            // Создаем временное уведомление
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 5px;
+                z-index: 1000;
+                animation: fadeOut 2s forwards;
+            `;
+            
+            // Добавляем анимацию fadeOut
+            if (!document.getElementById('fadeout-style')) {
+                const style = document.createElement('style');
+                style.id = 'fadeout-style';
+                style.textContent = `
+                    @keyframes fadeOut {
+                        0% { opacity: 1; }
+                        70% { opacity: 1; }
+                        100% { opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
+        }
+        
+        // Инициализация
+        updateAnimation();
+        
+        // Добавляем возможность управления колесом мыши
+        document.querySelector('.scroll-demo').addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                changeSpeed(e.deltaY > 0 ? -1 : 1);
+            }
+        });
+        
+        // Информация для консоли
+        console.log('Бесконечный скролл загружен!');
+        console.log('Управление:');
+        console.log('- Кнопки на странице');
+        console.log('- Ctrl + колесо мыши для изменения скорости');
+        console.log('- Наведите на контент для паузы');
+    </script>
+</body>
+</html>
